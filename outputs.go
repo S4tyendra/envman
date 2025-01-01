@@ -16,6 +16,7 @@ Usage:
   %s [command] [flags]
 
 Available Commands:
+  init        Initialize envman in your shell
   create      Create a new environment profile
   edit        Edit an existing environment profile
   show        Display profile contents

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/user"
 	"strings"
 	"time"
 
@@ -153,7 +154,28 @@ func (v *Viewer) Run() error {
 }
 
 func ViewProfile(name string) error {
-	profilePath := fmt.Sprintf("/path/to/profiles/%s.env", name)
+	currentUser, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("failed to get current user: %v", err)
+	}
+	configFilePath := fmt.Sprintf("/home/%s/.config/%s/%s", currentUser.Username, ProjectName, configFileName)
+	configContent, err := os.ReadFile(configFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to read config file: %v", err)
+	}
+	var profileDir string
+	for _, line := range strings.Split(string(configContent), "\n") {
+		if strings.HasPrefix(line, "PROFILE_DIR=") {
+			profileDir = strings.TrimPrefix(line, "PROFILE_DIR=")
+			profileDir = strings.Split(profileDir, "#")[0]
+			profileDir = strings.TrimSpace(profileDir)
+			break
+		}
+	}
+	if profileDir == "" {
+		return fmt.Errorf("PROFILE_DIR not found in config")
+	}
+	profilePath := fmt.Sprintf("%s/%s.env", profileDir, name)
 
 	config := ViewConfig{
 		filePath:    profilePath,

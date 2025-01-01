@@ -4,6 +4,9 @@
 
 `envman` is a command-line tool that simplifies the management of environment variables using profiles. It allows you to create, edit, list, view, and delete different sets of environment variables, streamlining your workflow when working on multiple projects or environments.
 
+> **Note:** This tool is currently only available on Linux systems. Support for macOS and Windows is coming soon.
+
+
 ## ✨ Features
 
 -   **Profile Creation:** Easily create new environment variable profiles.

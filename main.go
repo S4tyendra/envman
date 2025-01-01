@@ -110,6 +110,40 @@ func main() {
 		}
 		return
 	}
+	if len(os.Args) > 1 && os.Args[1] == "init" {
+		shell := detectShell()
+		forShell := false
+
+		if len(os.Args) > 2 && os.Args[2] == "-" {
+			forShell = true
+			if len(os.Args) > 3 {
+				shell = os.Args[3]
+			}
+		}
+
+		if err := ensureEnvmanDirs(); err != nil {
+			fmt.Fprintf(os.Stderr, "%s%s%sError:%s %v\n",
+				colorRed,
+				colorBold,
+				iconX,
+				colorReset,
+				err,
+			)
+			os.Exit(1)
+		}
+
+		if err := InitCommand(forShell, shell); err != nil {
+			fmt.Fprintf(os.Stderr, "%s%s%sError:%s %v\n",
+				colorRed,
+				colorBold,
+				iconX,
+				colorReset,
+				err,
+			)
+			os.Exit(1)
+		}
+		return
+	}
 
 	fmt.Printf("Command '%s' not yet implemented or incorrect command\n", os.Args[1])
 }

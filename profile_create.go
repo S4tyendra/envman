@@ -21,9 +21,10 @@ const (
 )
 
 const (
-	iconCheck = "✓"
-	iconX     = "✗"
-	iconInfo  = "ℹ"
+	iconCheck   = "✓"
+	iconX       = "✗"
+	iconInfo    = "ℹ"
+	iconWarning = "⚠"
 )
 
 type CreateProfileModel struct {
