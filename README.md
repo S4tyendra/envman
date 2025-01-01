@@ -18,7 +18,7 @@
 
 ## 📦 TODO
 
-- [ ] Load profiles and environment variables to session.
+- [x] Load profiles and environment variables to session.
 - [ ] Add Comments to code.
 - [ ] Add support for exporting and importing/exporting profiles.
 - [ ] Implement Encrypted profiles.
