@@ -66,7 +66,7 @@ func (m ListProfileModel) View() string {
 		len(m.profiles),
 	))
 
-	output.WriteString(fmt.Sprintf("%s%s%-20s %-8s %-19s %-19s%s\n",
+	output.WriteString(fmt.Sprintf("%s%s%-20s %-8s %-19s %-19s\n",
 		colorBold,
 		colorYellow,
 		"Profile Name",

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	tea "github.com/charmbracelet/bubbletea"
 	"os"
 )
 
@@ -20,11 +19,7 @@ func main() {
 	}
 
 	if len(os.Args) <= 1 || os.Args[1] == "-h" || os.Args[1] == "--help" {
-		program := tea.NewProgram(AppModel{})
-		if _, err := program.Run(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error running program: %v\n", err)
-			os.Exit(1)
-		}
+		fmt.Println(helpText)
 		return
 	}
 
