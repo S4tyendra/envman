@@ -78,11 +78,13 @@ func (m InitModel) View() string {
 
 	if m.succeeded {
 		if m.selected == "a" {
-			return fmt.Sprintf("%s%s%sSuccess:%s Configuration appended to %s\n",
+			return fmt.Sprintf("%s%s%sSuccess:%s Configuration appended to %s\nPlease run\n❯ eval \"$(envman init - %s)\" \nor\n❯ source %s\nor Restart your shell\n",
 				colorGreen,
 				colorBold,
 				iconCheck,
 				colorReset,
+				m.rcFile,
+				m.shell,
 				m.rcFile,
 			)
 		}
@@ -119,51 +121,10 @@ func (m InitModel) View() string {
 
 func getEnvmanBlock(shell string) string {
 	currentTime := time.Now().UTC().Format("2006-01-02 15:04:05")
-	envmanRoot, err := getEnvmanRoot()
-	if err != nil {
-		fmt.Println("Error getting envman root directory: ", err)
-		os.Exit(1)
-	}
-	switch shell {
-	case "bash", "zsh":
-		return fmt.Sprintf(`# START >>>>>>>>>>>> envman Managed [%s] <<<<<<<<<<<<<<<
-envman() {
-    if [ "$1" = "load" ]; then
-        if [ -z "$2" ]; then
-            echo "Usage: envman load <profile>" >&2
-            return 1
-        fi
-        if [ ! -f "%s/$2.env" ]; then
-             echo "Profile not found: $2" >&2
-            return 1
-        fi
-        source "%s/$2.env"
-    else
-        command envman "$@"
-    fi
-}
-# END >>>>>>>>>>>> envman Managed <<<<<<<<<<<<<<<`, currentTime, envmanRoot, envmanRoot)
-	case "fish":
-		return fmt.Sprintf(`# START >>>>>>>>>>>> envman Managed [%s] <<<<<<<<<<<<<<<
-function envman
-    if [ "$argv[1]" = "load" ]
-         if [ -z "$argv[2]" ]
-            echo "Usage: envman load <profile>" >&2
-            return 1
-         end
-        if not test -f "%s/$argv[2].env"
-             echo "Profile not found: $argv[2]" >&2
-            return 1
-        end
-        source "%s/$argv[2].env"
-    else
-        command envman $argv
-    end
-end
-# END >>>>>>>>>>>> envman Managed <<<<<<<<<<<<<<<`, currentTime, envmanRoot, envmanRoot)
-	default:
-		return fmt.Sprintf("Unsupported shell: %s\n", shell)
-	}
+	return fmt.Sprintf(`
+# START >>>>>>>>>>>> envman Managed [%s] <<<<<<<<<<<<<<<
+eval "$(envman init - %s)"
+# END >>>>>>>>>>>> envman Managed <<<<<<<<<<<<<<<`, currentTime, shell)
 }
 
 func (m InitModel) appendToRC() error {
@@ -175,8 +136,7 @@ func (m InitModel) appendToRC() error {
 	}
 
 	existing, err := os.ReadFile(rcPath)
-	if err == nil && strings.Contains(string(existing), fmt.Sprintf(`envman() {
-    if [ "$1" = "load" ]; then`)) {
+	if err == nil && strings.Contains(string(existing), fmt.Sprintf(`eval "$(envman init - %s)"`, m.shell)) {
 		return fmt.Errorf("envman configuration already exists in %s", m.rcFile)
 	}
 
@@ -383,36 +343,61 @@ func init() {
 		fmt.Println("Error getting envman root directory: ", err)
 		os.Exit(1)
 	}
-	bashInitScript = fmt.Sprintf(`envman() {
-    if [ "$1" = "load" ]; then
-        if [ -z "$2" ]; then
-            echo "Usage: envman load <profile>" >&2
-            return 1
-        fi
-         if [ ! -f "%s/$2.env" ]; then
-             echo "Profile not found: $2" >&2
-            return 1
-        fi
-        source "%s/$2.env"
-    else
-        command envman "$@"
+	bashInitScript = fmt.Sprintf(`export ENVMAN_ROOT="%s"
+
+envman() {
+    local command
+    command="$1"
+    if [ "$#" -gt 0 ]; then
+        shift
     fi
-}
-`, envmanRoot, envmanRoot)
-	fishInitScript = fmt.Sprintf(`function envman
-    if [ "$argv[1]" = "load" ]
-         if [ -z "$argv[2]" ]
+
+    case "$command" in
+    load)
+        if [ "$#" -eq 0 ]; then
             echo "Usage: envman load <profile>" >&2
             return 1
-         end
-        if not test -f "%s/$argv[2].env"
-             echo "Profile not found: $argv[2]" >&2
+        fi
+        
+        local profile_path="$ENVMAN_ROOT/$1.env"
+        if [ -f "$profile_path" ]; then
+            source "$profile_path"
+            echo "Loaded profile: $1"
+        else
+            echo "Profile not found: $1" >&2
+            return 1
+        fi
+        ;;
+    *)
+        command envman "$command" "$@"
+        ;;
+    esac
+}
+`, envmanRoot)
+	fishInitScript = fmt.Sprintf(`set -gx ENVMAN_ROOT "%s"
+
+function envman
+    set -l command $argv[1]
+    set -e argv[1]
+
+    switch "$command"
+    case "load"
+        if test (count $argv) -eq 0
+            echo "Usage: envman load <profile>" >&2
             return 1
         end
-        source "%s/$argv[2].env"
-    else
-        command envman $argv
+        
+        set -l profile_path "$ENVMAN_ROOT/$argv[1].env"
+        if test -f "$profile_path"
+            source "$profile_path"
+            echo "Loaded profile: $argv[1]"
+        else
+            echo "Profile not found: $argv[1]" >&2
+            return 1
+        end
+    case '*'
+        command envman "$command" $argv
     end
 end
-`, envmanRoot, envmanRoot)
+`, envmanRoot)
 }

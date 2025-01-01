@@ -55,7 +55,8 @@ install_binary() {
     return 1
   fi
 
-  echo "Successfully installed envman for architecture: $arch"
+  echo "Successfully installed envman for architecture: $arch \n Initialize with: envman init"
+  envman init
   return 0
 }
 

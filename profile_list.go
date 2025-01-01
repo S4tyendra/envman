@@ -83,7 +83,7 @@ func (m ListProfileModel) View() string {
 
 	for _, p := range m.profiles {
 		profileName := strings.TrimSuffix(p.name, ".env")
-		output.WriteString(fmt.Sprintf("%s %-20s %s%-8d%s %-19s %-19s\n",
+		output.WriteString(fmt.Sprintf("%s %-20s %s%-8d%s %-19s\n",
 			colorBold,
 			profileName,
 			colorGreen,
