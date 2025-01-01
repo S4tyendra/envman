@@ -25,7 +25,52 @@
 
 ## 🚀 Installation
 
-To get started with `envman`, you can either download a pre-built binary or build it from the source.
+```shell
+curl -L http://envman.devh.in/install | bash
+```
+
+## 📚 Usage
+
+### **Help**
+
+```shell
+❯ envman -h
+envman v0.1.0
+Usage:
+  envman [command] [flags]
+
+Available Commands:
+  init        Initialize envman in your shell
+  profile     Manage environment profiles
+  load        Load a profile into the current shell
+
+Profile Subcommands:
+  create      Create a new environment profile
+  edit        Edit an existing environment profile
+  show        Display profile contents
+  delete      Delete an environment profile
+  list        List all available profiles
+
+Examples:
+  # Initialize envman
+  $ envman init
+
+  # Profile Management
+  $ envman profile create server-test    # Create new profile
+  $ envman profile list                  # List all profiles
+  $ envman profile show server-test      # Show profile contents
+  $ envman profile edit server-test      # Edit existing profile
+  $ envman profile delete server-test    # Delete profile
+
+  # Load Profile
+  $ envman load server-test             # Load profile into current shell
+
+Flags:
+  -h, --help    Display help information
+  -v, --version Display version information
+
+```
+
 
 **Quick Start Example:**
 
